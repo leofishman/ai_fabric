@@ -1,0 +1,7 @@
+services:
+  ai_fabric.sync:
+    class: Drupal\ai_fabric\FabricSyncService
+    arguments:
+      - '@entity_type.manager'
+      - '@file_system'
+      - '@logger.factory'

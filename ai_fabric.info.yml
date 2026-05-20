@@ -1,0 +1,7 @@
+name: 'Drupal AI Fabric Integration'
+type: module
+description: 'Integrates Daniel Miessler’s Fabric patterns into the Drupal AI subsystem ecosystem.'
+package: 'AI'
+core_version_requirement: '^10 || ^11'
+dependencies:
+  - ai:ai

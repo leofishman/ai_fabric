@@ -1,0 +1,22 @@
+ai_fabric.fabric_pattern.*:
+  type: config_entity
+  label: 'Fabric Pattern'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    label:
+      type: label
+      label: 'Label'
+    system_prompt:
+      type: string
+      label: 'System Prompt'
+    description:
+      type: string
+      label: 'Description'
+    system_prompt_hash:
+      type: string
+      label: 'System Prompt Hash'
+    is_customized:
+      type: boolean
+      label: 'Is Customized'

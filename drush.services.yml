@@ -1,0 +1,7 @@
+services:
+  ai_fabric.commands:
+    class: Drupal\ai_fabric\Commands\AiFabricCommands
+    arguments:
+      - '@ai_fabric.sync'
+    tags:
+      - { name: drush.command }
