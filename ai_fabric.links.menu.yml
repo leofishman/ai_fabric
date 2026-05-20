@@ -1,0 +1,6 @@
+ai_fabric.admin_sync:
+  title: 'AI Fabric Sync'
+  description: 'Synchronize Daniel Miessler Fabric patterns to and from Drupal configuration.'
+  parent: system.admin_config_services
+  route_name: ai_fabric.admin_sync
+  weight: 10

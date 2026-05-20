@@ -1,0 +1,7 @@
+ai_fabric.admin_sync:
+  path: '/admin/config/services/ai-fabric'
+  defaults:
+    _form: '\Drupal\ai_fabric\Form\FabricSyncForm'
+    _title: 'AI Fabric Sync'
+  requirements:
+    _permission: 'administer site configuration'

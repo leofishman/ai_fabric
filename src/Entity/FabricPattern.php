@@ -4,33 +4,34 @@ declare(strict_types=1);
 
 namespace Drupal\ai_fabric\Entity;
 
+use Drupal\Core\Entity\Attribute\ConfigEntityType;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Defines the Fabric Pattern configuration entity.
- *
- * @ConfigEntityType(
- *   id = "fabric_pattern",
- *   label = @Translation("Fabric Pattern"),
- *   handlers = {
- *     "list_builder" = "Drupal\ai_fabric\FabricPatternListBuilder",
- *   },
- *   config_prefix = "fabric_pattern",
- *   admin_permission = "administer site configuration",
- *   entity_keys = {
- *     "id" = "id",
- *     "label" = "label",
- *   },
- *   config_export = {
- *     "id",
- *     "label",
- *     "system_prompt",
- *     "description",
- *     "system_prompt_hash",
- *     "is_customized",
- *   }
- * )
  */
+#[ConfigEntityType(
+  id: 'fabric_pattern',
+  label: new TranslatableMarkup('Fabric Pattern'),
+  handlers: [
+    'list_builder' => 'Drupal\ai_fabric\FabricPatternListBuilder',
+  ],
+  config_prefix: 'fabric_pattern',
+  admin_permission: 'administer site configuration',
+  entity_keys: [
+    'id' => 'id',
+    'label' => 'label',
+  ],
+  config_export: [
+    'id',
+    'label',
+    'system_prompt',
+    'description',
+    'system_prompt_hash',
+    'is_customized',
+  ],
+)]
 final class FabricPattern extends ConfigEntityBase {
 
   /**
