@@ -82,4 +82,22 @@ final class FabricSyncServiceTest extends UnitTestCase {
     $sync_service->syncPatterns('/non_existent_directory_12345');
   }
 
+  /**
+   * Tests that exportPatterns throws exception on invalid path.
+   *
+   * @covers ::exportPatterns
+   */
+  public function testExportPatternsThrowsExceptionOnInvalidPath(): void {
+    $sync_service = new FabricSyncService(
+      $this->entityTypeManager,
+      $this->fileSystem,
+      $this->loggerFactory
+    );
+
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('is not a valid directory');
+    $sync_service->exportPatterns('/non_existent_directory_12345');
+  }
+
 }
+
