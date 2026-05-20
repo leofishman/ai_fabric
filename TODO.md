@@ -129,16 +129,16 @@ All developed code must adhere strictly to these principles, reflecting senior D
 ## 🚀 Next Steps & Future Phases
 
 ### Phase 7: Parallel Collaboration (Preparing the Ground for Jules)
-- [ ] **Establish Jules' isolated development branch**
+- [x] **Establish Jules' isolated development branch**
   - Create the `jules/eca-integration` (or a generic feature branch) on the GitHub remote.
   - Document this branch so Jules can checkout and work on it without touching `main` directly.
-- [ ] **Define and document Jules' task specifications**
+- [x] **Define and document Jules' task specifications**
   - Write down the architectural boundaries for Jules' feature development.
   - Provide a clear API contract of the `ai_fabric.sync` service.
 - [ ] **Set up Quality Control Integration (CI Gatekeeper) for Antigravity**
   - Define the verification procedure to download, mount, test, and merge Jules' changes after automatic testing in local DDEV.
 
 ### Phase 8: UI Enhancements & Admin Panel
-- [ ] **Implement Admin Form routes (`ai_fabric.routing.yml`)**
+- [x] **Implement Admin Form routes (`ai_fabric.routing.yml`)**
   - Register `/admin/config/services/ai-fabric` settings route.
   - Define custom admin form class for syncing configuration via standard Drupal UI button clicks.
