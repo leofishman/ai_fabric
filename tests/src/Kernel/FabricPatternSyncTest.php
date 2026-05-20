@@ -6,12 +6,14 @@ namespace Drupal\Tests\ai_fabric\Kernel;
 
 use Drupal\ai_fabric\Entity\FabricPattern;
 use Drupal\KernelTests\KernelTestBase;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests Fabric Pattern configuration entities.
  *
  * @group ai_fabric
  */
+#[RunTestsInSeparateProcesses]
 final class FabricPatternSyncTest extends KernelTestBase {
 
   /**

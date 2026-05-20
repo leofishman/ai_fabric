@@ -54,7 +54,7 @@ final class FabricSyncService {
     $results = ['created' => 0, 'updated' => 0, 'skipped' => 0];
 
     // Sanitize and resolve real path to guard against directory traversal.
-    $resolved_path = realpath($local_path);
+    $resolved_path = str_contains($local_path, '://') ? $local_path : realpath($local_path);
     if ($resolved_path === FALSE || !is_dir($resolved_path)) {
       $this->logger->error('Invalid patterns path specified: @path', ['@path' => $local_path]);
       throw new \InvalidArgumentException(sprintf('The path "%s" is not a valid directory.', $local_path));
@@ -66,12 +66,24 @@ final class FabricSyncService {
       $patterns_dir = $resolved_path . '/patterns';
     }
 
-    $directories = glob($patterns_dir . '/*', GLOB_ONLYDIR);
-    if (empty($directories)) {
+    if (!is_dir($patterns_dir)) {
       return $results;
     }
 
-    foreach ($directories as $dir) {
+    $files = scandir($patterns_dir);
+    if ($files === FALSE) {
+      return $results;
+    }
+
+    foreach ($files as $file) {
+      if ($file === '.' || $file === '..') {
+        continue;
+      }
+      $dir = $patterns_dir . '/' . $file;
+      if (!is_dir($dir)) {
+        continue;
+      }
+
       $system_file = $dir . '/system.md';
       if (!file_exists($system_file)) {
         continue;
@@ -98,8 +110,10 @@ final class FabricSyncService {
           continue;
         }
 
-        // Check if actual file content has changed compared to last sync.
-        if ($existing_pattern->getSystemPromptHash() !== $file_hash || $force_overwrite) {
+        // Check if actual file content has changed compared to last sync, or if forced to overwrite customizations.
+        $needs_update = ($existing_pattern->getSystemPromptHash() !== $file_hash) || ($existing_pattern->isCustomized() && $force_overwrite);
+
+        if ($needs_update) {
           $existing_pattern->setSystemPrompt($prompt_content);
           $existing_pattern->setSystemPromptHash($file_hash);
           if ($force_overwrite) {
@@ -141,7 +155,7 @@ final class FabricSyncService {
   public function exportPatterns(string $local_path): array {
     $exported = [];
 
-    $resolved_path = realpath($local_path);
+    $resolved_path = str_contains($local_path, '://') ? $local_path : realpath($local_path);
     if ($resolved_path === FALSE || !is_dir($resolved_path)) {
       $this->logger->error('Invalid patterns export path: @path', ['@path' => $local_path]);
       throw new \InvalidArgumentException(sprintf('The export path "%s" is not a valid directory.', $local_path));
