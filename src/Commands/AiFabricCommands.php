@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Drupal\ai_fabric\Commands;
 
 use Drupal\ai_fabric\FabricSyncService;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drush\Commands\DrushCommands;
 
 /**
  * Drush command file for the ai_fabric module.
  */
 final class AiFabricCommands extends DrushCommands {
+  use StringTranslationTrait;
 
   /**
    * Constructs a new AiFabricCommands instance.
@@ -117,13 +119,6 @@ final class AiFabricCommands extends DrushCommands {
     catch (\Exception $e) {
       $this->io()->error($this->t('Export failed: @error', ['@error' => $e->getMessage()]));
     }
-  }
-
-  /**
-   * Helper to translate strings in CLI environment.
-   */
-  private function t(string $string, array $args = []): string {
-    return empty($args) ? $string : strtr($string, $args);
   }
 
 }
