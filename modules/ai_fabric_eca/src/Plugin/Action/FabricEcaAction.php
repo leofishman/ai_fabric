@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Drupal\ai_fabric\Plugin\Action;
+namespace Drupal\ai_fabric_eca\Plugin\Action;
 
 use Drupal\ai\Plugin\AiProviderPluginManager;
 use Drupal\ai\OperationType\Chat\ChatInput;
 use Drupal\ai\OperationType\Chat\ChatMessage;
+use Drupal\ai_fabric\Entity\FabricPattern;
 use Drupal\Core\Action\ConfigurableActionBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
