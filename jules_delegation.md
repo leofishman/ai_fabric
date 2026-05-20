@@ -3,7 +3,13 @@
 This document outlines the detailed architectural requirements and API contracts for implementing the **ECA (Event-Condition-Action) integration** for the `ai_fabric` module.
 
 > [!IMPORTANT]
-> **Workspace Context**: You are working on the branch `jules/eca-integration` in an offline, local context without access to DDEV or a running Drupal database. Use this document as your strict guide and API reference.
+> **MANDATORY DRUPAL SKILLS LOAD**: Before starting implementation, you **MUST** load and follow the senior Drupal and DDEV skills located inside this repository at the submodule path:
+> `skills/.claude/skills/`
+>
+> If this directory is empty in your workspace, initialize it first by running:
+> `git submodule update --init --recursive`
+>
+> Use your viewing tools to read the `SKILL.md` files of relevant folders (e.g., `skills/.claude/skills/drupal-access/SKILL.md`, `skills/.claude/skills/drupal-services/SKILL.md`, `skills/.claude/skills/drupal-routes/SKILL.md`, etc.) to ensure that your code follows senior, decoupled, strictly typed Drupal 11 patterns.
 
 ---
 
