@@ -34,11 +34,11 @@ ai_fabric/
 ## 📋 Implementation Tasklist
 
 ### Phase 1: Foundation & Schema Definitions
-- [ ] **Create `ai_fabric.info.yml`**
+- [x] **Create `ai_fabric.info.yml`**
   - Define name as `Drupal AI Fabric Integration`.
   - Set core compatibility to `^10 || ^11`.
   - Add dependency on `ai:ai`.
-- [ ] **Create Config Entity Schema `config/schema/ai_fabric.schema.yml`**
+- [x] **Create Config Entity Schema `config/schema/ai_fabric.schema.yml`**
   - Map `fabric_pattern.*` properties.
   - Define exact data types for validation:
     - `id`: string (machine name)
@@ -49,12 +49,12 @@ ai_fabric/
     - `is_customized`: boolean (flag indicating if edited directly in Drupal)
 
 ### Phase 2: Configuration Entity
-- [ ] **Implement `FabricPattern` Entity (`src/Entity/FabricPattern.php`)**
+- [x] **Implement `FabricPattern` Entity (`src/Entity/FabricPattern.php`)**
   - Use `#[ConfigEntityType]` attribute or annotations.
   - Define fields (`id`, `label`, `system_prompt`, `description`, `system_prompt_hash`, `is_customized`).
   - Implement getters and setters with strict types.
   - Set `admin_permission` to `administer site configuration`.
-- [ ] **Implement `FabricPatternListBuilder` (`src/FabricPatternListBuilder.php`)**
+- [x] **Implement `FabricPatternListBuilder` (`src/FabricPatternListBuilder.php`)**
   - Extend `ConfigEntityListBuilder`.
   - Render an admin-friendly table displaying pattern names, descriptions, and a status column highlighting:
     - `Synced` (matches file hash, not customized)
@@ -62,7 +62,7 @@ ai_fabric/
     - `Local Only` (created in Drupal, not yet exported to disk)
 
 ### Phase 3: Synchronization & Conflict Resolution Engine
-- [ ] **Implement `FabricSyncService` (`src/FabricSyncService.php`)**
+- [x] **Implement `FabricSyncService` (`src/FabricSyncService.php`)**
   - Register as `ai_fabric.sync` service in `ai_fabric.services.yml` with autowiring.
   - Inject dependencies: `EntityTypeManagerInterface`, `FileSystemInterface`, and `LoggerChannelFactoryInterface`.
   - **Security Gate**: Prevent directory traversal by sanitizing input paths with `realpath` and validating path structure.
@@ -75,7 +75,7 @@ ai_fabric/
     - If entity does not exist: Create it, compute and set `system_prompt_hash`, and set `is_customized` to `FALSE`.
 
 ### Phase 4: Contrib Back (Upstream Export)
-- [ ] **Implement Upstream Export in `FabricSyncService`**
+- [x] **Implement Upstream Export in `FabricSyncService`**
   - Add `exportPatterns($local_path)` method:
     - Load all entities where `is_customized = TRUE` OR where there is no `system_prompt_hash` (meaning it was newly created in Drupal).
     - For each pattern:
@@ -85,7 +85,7 @@ ai_fabric/
       - Reset `is_customized` to `FALSE` and update `system_prompt_hash` to match the newly written file's SHA-256 hash, re-establishing sync parity.
 
 ### Phase 5: Drush Command CLI
-- [ ] **Implement `AiFabricCommands` (`src/Commands/AiFabricCommands.php`)**
+- [x] **Implement `AiFabricCommands` (`src/Commands/AiFabricCommands.php`)**
   - Define command `ai-fabric:sync` with `path` argument and `--force` flag:
     - Runs the imports.
     - `--force` forces overwrite of locally customized entities.
@@ -95,10 +95,10 @@ ai_fabric/
     - Generates Git-friendly advice if a `.git` folder is detected (e.g., "Changes written to [path]. You can run `git diff` or `git status` inside that folder to inspect and commit.").
 
 ### Phase 6: Verification & Quality Assurance (Testing)
-- [ ] **Create Unit Test Suite (`tests/src/Unit/FabricSyncServiceTest.php`)**
+- [x] **Create Unit Test Suite (`tests/src/Unit/FabricSyncServiceTest.php`)**
   - Verify prompt parsing logic.
   - Mock `FileSystemInterface` and directory structures.
-- [ ] **Create Kernel Test Suite (`tests/src/Kernel/FabricPatternSyncTest.php`)**
+- [x] **Create Kernel Test Suite (`tests/src/Kernel/FabricPatternSyncTest.php`)**
   - Boot a minimal Drupal system database, enable the `ai_fabric` module, and install config schemas.
   - **Verify Sync & Conflict Resolution**:
     - Run initial sync → Verify patterns are created in DB.
