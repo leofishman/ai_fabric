@@ -9,6 +9,8 @@ use Drupal\ai\OperationType\Chat\ChatInput;
 use Drupal\ai\OperationType\Chat\ChatMessage;
 use Drupal\ai_fabric\Entity\FabricPattern;
 use Drupal\Core\Action\ConfigurableActionBase;
+use Drupal\Core\Action\Attribute\Action;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -19,13 +21,12 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Executes a Fabric Pattern via the Drupal AI ecosystem within ECA workflows.
- *
- * @Action(
- *   id = "ai_fabric_eca_run_pattern",
- *   label = @Translation("Run AI Fabric Pattern"),
- *   category = @Translation("AI Fabric")
- * )
  */
+#[Action(
+  id: 'ai_fabric_eca_run_pattern',
+  label: new TranslatableMarkup('Run AI Fabric Pattern'),
+  category: new TranslatableMarkup('AI Fabric'),
+)]
 final class FabricEcaAction extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
 
   /**
