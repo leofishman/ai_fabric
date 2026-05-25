@@ -1,8 +1,8 @@
 name: 'AI Fabric ECA Integration'
 type: module
-description: 'Integrates AI Fabric patterns with the ECA (Event-Condition-Action) rules engine.'
-package: AI
-core_version_requirement: ^10 || ^11
+description: 'Integrates AI Fabric with ECA.'
+package: 'AI'
+core_version_requirement: '^10 || ^11'
 dependencies:
   - ai_fabric:ai_fabric
   - eca:eca
