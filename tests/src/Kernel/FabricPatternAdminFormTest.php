@@ -63,7 +63,7 @@ final class FabricPatternAdminFormTest extends KernelTestBase {
     $form_state = new FormState();
     $form_state->setValues([
       'local_path' => $temp_dir,
-      'force_overwrite' => 0,
+      'force_overwrite' => NULL,
     ]);
     
     // Set the triggering element to simulate clicking the import button.
@@ -78,6 +78,11 @@ final class FabricPatternAdminFormTest extends KernelTestBase {
 
     // Verify there are no form errors.
     $this->assertEmpty($form_state->getErrors());
+
+    // Verify that the configuration was saved correctly.
+    $config = $this->container->get('config.factory')->get('ai_fabric.settings');
+    $this->assertEquals($temp_dir, $config->get('local_path'));
+    $this->assertFalse($config->get('force_overwrite'));
 
     // Assert that the entity was created successfully by the sync service.
     $storage = $this->container->get('entity_type.manager')->getStorage('fabric_pattern');
@@ -108,7 +113,7 @@ final class FabricPatternAdminFormTest extends KernelTestBase {
     $form_state = new FormState();
     $form_state->setValues([
       'local_path' => $temp_dir,
-      'force_overwrite' => 0,
+      'force_overwrite' => NULL,
     ]);
     
     // Set the triggering element to simulate clicking the export button.
@@ -123,6 +128,11 @@ final class FabricPatternAdminFormTest extends KernelTestBase {
 
     $this->assertEmpty($form_state->getErrors());
 
+    // Verify that the configuration was saved correctly.
+    $config = $this->container->get('config.factory')->get('ai_fabric.settings');
+    $this->assertEquals($temp_dir, $config->get('local_path'));
+    $this->assertFalse($config->get('force_overwrite'));
+
     // Assert the file was successfully written.
     $expected_file = $temp_dir . '/patterns/custom_wisdom/system.md';
     $this->assertFileExists($expected_file);
@@ -130,6 +140,24 @@ final class FabricPatternAdminFormTest extends KernelTestBase {
 
     $this->cleanupDirectory($temp_dir);
   }
+
+  /**
+   * Tests that default values are correctly loaded from config.
+   */
+  public function testFormDefaultValues(): void {
+    // Set some initial configuration values.
+    $this->container->get('config.factory')->getEditable('ai_fabric.settings')
+      ->set('local_path', '/path/to/some/fabric')
+      ->set('force_overwrite', TRUE)
+      ->save();
+
+    $form_builder = $this->container->get('form_builder');
+    $form = $form_builder->getForm(FabricSyncForm::class);
+
+    $this->assertEquals('/path/to/some/fabric', $form['local_path']['#default_value']);
+    $this->assertTrue($form['force_overwrite']['#default_value']);
+  }
+
 
   /**
    * Helper to create a temporary directory.

@@ -3,5 +3,6 @@ services:
     class: Drupal\ai_fabric\Commands\AiFabricCommands
     arguments:
       - '@ai_fabric.sync'
+      - '@config.factory'
     tags:
       - { name: drush.command }

@@ -20,3 +20,15 @@ ai_fabric.fabric_pattern.*:
     is_customized:
       type: boolean
       label: 'Is Customized'
+
+ai_fabric.settings:
+  type: config_object
+  label: 'AI Fabric Settings'
+  mapping:
+    local_path:
+      type: string
+      label: 'Local Path'
+    force_overwrite:
+      type: boolean
+      label: 'Force Overwrite'
+

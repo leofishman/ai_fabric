@@ -5,32 +5,51 @@ declare(strict_types=1);
 namespace Drupal\ai_fabric\Form;
 
 use Drupal\ai_fabric\FabricSyncService;
-use Drupal\Core\Form\FormBase;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
+use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides an administrative synchronization form for AI Fabric patterns.
  */
-final class FabricSyncForm extends FormBase {
+final class FabricSyncForm extends ConfigFormBase {
 
   /**
    * Constructs a new FabricSyncForm.
    *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The factory for configuration objects.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
+   *   The typed config manager.
    * @param \Drupal\ai_fabric\FabricSyncService $syncService
    *   The Fabric synchronization service.
    */
   public function __construct(
+    ConfigFactoryInterface $config_factory,
+    TypedConfigManagerInterface $typed_config_manager,
     protected FabricSyncService $syncService,
-  ) {}
+  ) {
+    parent::__construct($config_factory, $typed_config_manager);
+  }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container): self {
     return new self(
+      $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('ai_fabric.sync')
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEditableConfigNames(): array {
+    return ['ai_fabric.settings'];
   }
 
   /**
@@ -44,12 +63,14 @@ final class FabricSyncForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
+    $config = $this->config('ai_fabric.settings');
+
     $form['local_path'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Fabric Patterns Path'),
       '#description' => $this->t('The absolute path to the directory containing Fabric patterns (e.g., /home/user/fabric). It should contain a "patterns" subdirectory.'),
       '#required' => TRUE,
-      '#default_value' => '',
+      '#default_value' => $config->get('local_path') ?? '',
       '#maxlength' => 512,
     ];
 
@@ -57,7 +78,7 @@ final class FabricSyncForm extends FormBase {
       '#type' => 'checkbox',
       '#title' => $this->t('Force overwrite of locally customized prompts'),
       '#description' => $this->t('If checked, local changes made to system prompts in Drupal will be overwritten by the version from the filesystem.'),
-      '#default_value' => FALSE,
+      '#default_value' => $config->get('force_overwrite') ?? FALSE,
     ];
 
     $form['actions'] = [
@@ -96,14 +117,16 @@ final class FabricSyncForm extends FormBase {
     if (!is_dir($path)) {
       $form_state->setErrorByName('local_path', $this->t('The path "@path" is not a valid directory or is not readable.', ['@path' => $path]));
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
+  }  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $path = trim($form_state->getValue('local_path'));
     $force = (bool) $form_state->getValue('force_overwrite');
+
+    $this->config('ai_fabric.settings')
+      ->set('local_path', $path)
+      ->set('force_overwrite', $force)
+      ->save();
+
+    parent::submitForm($form, $form_state);
 
     $triggering_element = $form_state->getTriggeringElement();
     $action = $triggering_element ? end($triggering_element['#parents']) : 'import';
@@ -138,3 +161,4 @@ final class FabricSyncForm extends FormBase {
   }
 
 }
+
