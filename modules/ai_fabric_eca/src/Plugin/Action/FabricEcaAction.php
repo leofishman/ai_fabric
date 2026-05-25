@@ -8,12 +8,14 @@ use Drupal\ai\Plugin\AiProviderPluginManager;
 use Drupal\ai\OperationType\Chat\ChatInput;
 use Drupal\ai\OperationType\Chat\ChatMessage;
 use Drupal\ai_fabric\Entity\FabricPattern;
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Action\ConfigurableActionBase;
 use Drupal\Core\Action\Attribute\Action;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Token;
 use Drupal\eca\Token\TokenServices;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -259,6 +261,14 @@ final class FabricEcaAction extends ConfigurableActionBase implements ContainerF
     catch (\Exception $e) {
       $this->logger->error('Error executing Fabric Pattern via AI: @message', ['@message' => $e->getMessage()]);
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function access($object, ?AccountInterface $account = NULL, $return_as_object = FALSE) {
+    $result = AccessResult::allowed();
+    return $return_as_object ? $result : $result->isAllowed();
   }
 
 }
