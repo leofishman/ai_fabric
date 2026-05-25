@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\ai_fabric\Commands;
 
 use Drupal\ai_fabric\FabricSyncService;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drush\Commands\DrushCommands;
 
@@ -19,6 +20,7 @@ final class AiFabricCommands extends DrushCommands {
    */
   public function __construct(
     private readonly FabricSyncService $syncService,
+    private readonly ConfigFactoryInterface $configFactory,
   ) {
     parent::__construct();
   }
@@ -26,22 +28,33 @@ final class AiFabricCommands extends DrushCommands {
   /**
    * Synchronizes Fabric patterns from the filesystem into Drupal.
    *
-   * @param string $path
-   *   The filesystem path to the cloned Fabric directory.
+   * @param string|null $path
+   *   The filesystem path to the cloned Fabric directory. If omitted, the configured default path will be used.
    * @param array $options
    *   An array of options.
    *
    * @option force Force overwrite of locally customized prompts in Drupal.
+   * @usage drush ai-fabric:sync
+   *   Syncs all patterns using the path configured in admin settings.
    * @usage drush ai-fabric:sync /path/to/fabric
-   *   Syncs all patterns.
-   * @usage drush ai-fabric:sync /path/to/fabric --force
-   *   Syncs and overwrites local modifications.
+   *   Syncs all patterns using the specified path.
+   * @usage drush ai-fabric:sync --force
+   *   Syncs and overwrites local modifications using the configured path.
    *
    * @command ai-fabric:sync
    * @aliases afs
    */
-  public function sync(string $path, array $options = ['force' => FALSE]): void {
+  public function sync(?string $path = NULL, array $options = ['force' => FALSE]): void {
     $force = (bool) $options['force'];
+
+    if (empty($path)) {
+      $path = $this->configFactory->get('ai_fabric.settings')->get('local_path');
+    }
+
+    if (empty($path)) {
+      $this->io()->error($this->t('No path was provided and no default path is configured. Configure a default path at /admin/config/services/ai-fabric or pass it as an argument.'));
+      return;
+    }
 
     $this->io()->title($this->t('Starting Fabric patterns synchronization...'));
     $this->io()->text($this->t('Reading patterns from: @path', ['@path' => $path]));
@@ -69,16 +82,27 @@ final class AiFabricCommands extends DrushCommands {
   /**
    * Exports customized or new patterns from Drupal back to the local directory.
    *
-   * @param string $path
-   *   The filesystem path to the cloned Fabric directory.
+   * @param string|null $path
+   *   The filesystem path to the cloned Fabric directory. If omitted, the configured default path will be used.
    *
+   * @usage drush ai-fabric:contrib
+   *   Exports new and customized prompts back to Fabric repository using the path configured in settings.
    * @usage drush ai-fabric:contrib /path/to/fabric
-   *   Exports new and customized prompts back to Fabric repository.
+   *   Exports new and customized prompts back to Fabric repository using the specified path.
    *
    * @command ai-fabric:contrib
    * @aliases afc
    */
-  public function contrib(string $path): void {
+  public function contrib(?string $path = NULL): void {
+    if (empty($path)) {
+      $path = $this->configFactory->get('ai_fabric.settings')->get('local_path');
+    }
+
+    if (empty($path)) {
+      $this->io()->error($this->t('No path was provided and no default path is configured. Configure a default path at /admin/config/services/ai-fabric or pass it as an argument.'));
+      return;
+    }
+
     $this->io()->title($this->t('Starting Fabric patterns export (Contrib Back)...'));
     $this->io()->text($this->t('Exporting changes to: @path', ['@path' => $path]));
 
@@ -122,3 +146,4 @@ final class AiFabricCommands extends DrushCommands {
   }
 
 }
+
