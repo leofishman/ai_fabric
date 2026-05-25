@@ -1,0 +1,5 @@
+entity.fabric_pattern.add_form:
+  route_name: entity.fabric_pattern.add_form
+  title: 'Add Fabric Pattern'
+  appears_on:
+    - entity.fabric_pattern.collection
