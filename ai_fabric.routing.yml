@@ -5,3 +5,35 @@ ai_fabric.admin_sync:
     _title: 'AI Fabric Sync'
   requirements:
     _permission: 'administer site configuration'
+
+entity.fabric_pattern.collection:
+  path: '/admin/config/services/ai-fabric/patterns'
+  defaults:
+    _entity_list: 'fabric_pattern'
+    _title: 'Fabric Patterns'
+  requirements:
+    _permission: 'administer site configuration'
+
+entity.fabric_pattern.add_form:
+  path: '/admin/config/services/ai-fabric/patterns/add'
+  defaults:
+    _entity_form: 'fabric_pattern.add'
+    _title: 'Add Fabric Pattern'
+  requirements:
+    _permission: 'administer site configuration'
+
+entity.fabric_pattern.edit_form:
+  path: '/admin/config/services/ai-fabric/patterns/{fabric_pattern}'
+  defaults:
+    _entity_form: 'fabric_pattern.edit'
+    _title: 'Edit Fabric Pattern'
+  requirements:
+    _permission: 'administer site configuration'
+
+entity.fabric_pattern.delete_form:
+  path: '/admin/config/services/ai-fabric/patterns/{fabric_pattern}/delete'
+  defaults:
+    _entity_form: 'fabric_pattern.delete'
+    _title: 'Delete Fabric Pattern'
+  requirements:
+    _permission: 'administer site configuration'

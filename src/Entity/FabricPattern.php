@@ -16,12 +16,23 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
   label: new TranslatableMarkup('Fabric Pattern'),
   handlers: [
     'list_builder' => 'Drupal\ai_fabric\FabricPatternListBuilder',
+    'form' => [
+      'add' => 'Drupal\ai_fabric\Form\FabricPatternForm',
+      'edit' => 'Drupal\ai_fabric\Form\FabricPatternForm',
+      'delete' => 'Drupal\Core\Entity\EntityDeleteForm',
+    ],
   ],
   config_prefix: 'fabric_pattern',
   admin_permission: 'administer site configuration',
   entity_keys: [
     'id' => 'id',
     'label' => 'label',
+  ],
+  links: [
+    'collection' => '/admin/config/services/ai-fabric/patterns',
+    'add-form' => '/admin/config/services/ai-fabric/patterns/add',
+    'edit-form' => '/admin/config/services/ai-fabric/patterns/{fabric_pattern}',
+    'delete-form' => '/admin/config/services/ai-fabric/patterns/{fabric_pattern}/delete',
   ],
   config_export: [
     'id',

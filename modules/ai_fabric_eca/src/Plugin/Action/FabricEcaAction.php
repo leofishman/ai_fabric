@@ -4,22 +4,21 @@ declare(strict_types=1);
 
 namespace Drupal\ai_fabric_eca\Plugin\Action;
 
-use Drupal\ai\Plugin\AiProviderPluginManager;
-use Drupal\ai\OperationType\Chat\ChatInput;
-use Drupal\ai\OperationType\Chat\ChatMessage;
 use Drupal\ai_fabric\Entity\FabricPattern;
-use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Action\ConfigurableActionBase;
-use Drupal\Core\Action\Attribute\Action;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Utility\Token;
 use Drupal\eca\Token\TokenServices;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Action\ConfigurableActionBase;
+use Drupal\Core\Action\Attribute\Action;
+use Drupal\ai\Plugin\AiProviderPluginManager;
+use Drupal\ai\OperationType\Chat\ChatInput;
+use Drupal\ai\OperationType\Chat\ChatMessage;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Executes a Fabric Pattern via the Drupal AI ecosystem within ECA workflows.
@@ -27,81 +26,26 @@ use Psr\Log\LoggerInterface;
 #[Action(
   id: 'ai_fabric_eca_run_pattern',
   label: new TranslatableMarkup('Run AI Fabric Pattern'),
-  category: new TranslatableMarkup('AI Fabric'),
+  category: new TranslatableMarkup('AI Fabric')
 )]
 final class FabricEcaAction extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
 
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
+  use StringTranslationTrait;
 
   /**
-   * The AI provider plugin manager.
-   *
-   * @var \Drupal\ai\Plugin\AiProviderPluginManager
-   */
-  protected AiProviderPluginManager $aiProviderManager;
-
-  /**
-   * The core token service.
-   *
-   * @var \Drupal\Core\Utility\Token
-   */
-  protected Token $token;
-
-  /**
-   * The ECA token services.
-   *
-   * @var \Drupal\eca\Token\TokenServices
-   */
-  protected TokenServices $ecaTokenServices;
-
-  /**
-   * The logger.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected LoggerInterface $logger;
-
-  /**
-   * Constructs a new FabricEcaAction object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\ai\Plugin\AiProviderPluginManager $ai_provider_manager
-   *   The AI provider plugin manager.
-   * @param \Drupal\Core\Utility\Token $token
-   *   The core token service.
-   * @param \Drupal\eca\Token\TokenServices $eca_token_services
-   *   The ECA token services.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   The logger.
+   * Constructs a new FabricEcaAction.
    */
   public function __construct(
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    EntityTypeManagerInterface $entity_type_manager,
-    AiProviderPluginManager $ai_provider_manager,
-    Token $token,
-    TokenServices $eca_token_services,
-    LoggerInterface $logger
+    private readonly EntityTypeManagerInterface $entityTypeManager,
+    private readonly AiProviderPluginManager $aiPluginManager,
+    private readonly Token $token,
+    private readonly TokenServices $ecaTokenServices,
+    private readonly LoggerInterface $logger
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->entityTypeManager = $entity_type_manager;
-    $this->aiProviderManager = $ai_provider_manager;
-    $this->token = $token;
-    $this->ecaTokenServices = $eca_token_services;
-    $this->logger = $logger;
   }
 
   /**
@@ -116,7 +60,7 @@ final class FabricEcaAction extends ConfigurableActionBase implements ContainerF
       $container->get('ai.provider'),
       $container->get('token'),
       $container->get('eca.token_services'),
-      $container->get('logger.factory')->get('ai_fabric')
+      $container->get('logger.factory')->get('ai_fabric_eca')
     );
   }
 
@@ -130,13 +74,15 @@ final class FabricEcaAction extends ConfigurableActionBase implements ContainerF
       'provider_id' => '',
       'model_id' => '',
       'response_token' => 'ai_fabric_response',
-    ];
+    ] + parent::defaultConfiguration();
   }
 
   /**
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
+    $form = parent::buildConfigurationForm($form, $form_state);
+
     $patterns = $this->entityTypeManager->getStorage('fabric_pattern')->loadMultiple();
     $pattern_options = [];
     foreach ($patterns as $pattern) {
@@ -149,21 +95,20 @@ final class FabricEcaAction extends ConfigurableActionBase implements ContainerF
       '#options' => $pattern_options,
       '#default_value' => $this->configuration['pattern_id'],
       '#required' => TRUE,
-      '#description' => $this->t('Select the Fabric Pattern to run.'),
+      '#description' => $this->t('Select the Fabric pattern to run.'),
     ];
 
     $form['user_input'] = [
       '#type' => 'textarea',
-      '#title' => $this->t('Context/User Input'),
+      '#title' => $this->t('User Input / Context'),
       '#default_value' => $this->configuration['user_input'],
-      '#required' => TRUE,
-      '#description' => $this->t('The input prompt. You can use standard Drupal tokens (e.g. [node:body:value]).'),
+      '#description' => $this->t('The user input to pass to the pattern. You may use tokens (e.g., [node:body:value]).'),
     ];
 
+    $providers = $this->aiPluginManager->getAvailableProviders();
     $provider_options = [];
-    $providers = $this->aiProviderManager->getDefinitions();
     foreach ($providers as $id => $definition) {
-      $provider_options[$id] = $definition['label'];
+      $provider_options[$id] = $definition['label'] ?? $id;
     }
 
     $form['provider_id'] = [
@@ -176,10 +121,10 @@ final class FabricEcaAction extends ConfigurableActionBase implements ContainerF
 
     $form['model_id'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Model'),
+      '#title' => $this->t('Model ID'),
       '#default_value' => $this->configuration['model_id'],
       '#required' => TRUE,
-      '#description' => $this->t('The model ID to use (e.g. gpt-4o, claude-3-opus).'),
+      '#description' => $this->t('The model identifier (e.g., gpt-4, claude-3-opus).'),
     ];
 
     $form['response_token'] = [
@@ -187,7 +132,7 @@ final class FabricEcaAction extends ConfigurableActionBase implements ContainerF
       '#title' => $this->t('Response Token Name'),
       '#default_value' => $this->configuration['response_token'],
       '#required' => TRUE,
-      '#description' => $this->t('The ECA token name where the LLM response will be saved.'),
+      '#description' => $this->t('The name of the ECA token to store the LLM response.'),
     ];
 
     return $form;
@@ -197,6 +142,7 @@ final class FabricEcaAction extends ConfigurableActionBase implements ContainerF
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
+    parent::submitConfigurationForm($form, $form_state);
     $this->configuration['pattern_id'] = $form_state->getValue('pattern_id');
     $this->configuration['user_input'] = $form_state->getValue('user_input');
     $this->configuration['provider_id'] = $form_state->getValue('provider_id');
@@ -207,68 +153,44 @@ final class FabricEcaAction extends ConfigurableActionBase implements ContainerF
   /**
    * {@inheritdoc}
    */
-  public function execute($object = NULL): void {
+  public function execute($object = NULL) {
     $pattern_id = $this->configuration['pattern_id'];
-    $user_input = $this->configuration['user_input'];
-    $provider_id = $this->configuration['provider_id'];
-    $model_id = $this->configuration['model_id'];
-    $response_token = $this->configuration['response_token'];
-
-    if (empty($pattern_id) || empty($provider_id) || empty($model_id) || empty($response_token)) {
-      $this->logger->warning('Fabric pattern action executed with missing configuration.');
+    if (empty($pattern_id)) {
+      $this->logger->warning('Fabric ECA Action executed without a selected pattern.');
       return;
     }
 
-    /** @var \Drupal\ai_fabric\Entity\FabricPattern|null $pattern */
     $pattern = $this->entityTypeManager->getStorage('fabric_pattern')->load($pattern_id);
-
-    if (!$pattern) {
-      $this->logger->warning('Fabric pattern action executed with invalid pattern ID: @id', ['@id' => $pattern_id]);
+    if (!$pattern instanceof FabricPattern) {
+      $this->logger->warning('Fabric pattern @id could not be loaded.', ['@id' => $pattern_id]);
       return;
     }
 
     $system_prompt = $pattern->getSystemPrompt();
+    $user_input = $this->configuration['user_input'];
 
-    // Replaces tokens using ECA services if available.
-    if ($this->ecaTokenServices) {
-      $system_prompt = $this->ecaTokenServices->replace($system_prompt);
-      $user_input = $this->ecaTokenServices->replace($user_input);
-    } else {
-      // Fallback to standard token service if ECA token service is unavailable.
-      $system_prompt = $this->token->replace($system_prompt);
-      $user_input = $this->token->replace($user_input);
-    }
+    // Replace tokens using ECA token services.
+    $system_prompt_replaced = $this->ecaTokenServices->replace($system_prompt);
+    $user_input_replaced = $this->ecaTokenServices->replace($user_input);
 
     try {
       /** @var \Drupal\ai\Plugin\ProviderProxy $provider */
-      $provider = $this->aiProviderManager->createInstance($provider_id);
+      $provider = $this->aiPluginManager->createInstance($this->configuration['provider_id']);
 
       $chat_input = new ChatInput([
-        new ChatMessage('system', $system_prompt),
-        new ChatMessage('user', $user_input),
+        new ChatMessage('system', $system_prompt_replaced),
+        new ChatMessage('user', $user_input_replaced),
       ]);
 
-      $response = $provider->chat($chat_input, $model_id)->getNormalized();
+      $response = $provider->chat($chat_input, $this->configuration['model_id'])->getNormalized();
       $text_response = $response->getText();
 
-      // Save the result back to ECA's state using ecaTokenServices.
-      if ($this->ecaTokenServices) {
-          $this->ecaTokenServices->addTokenData($response_token, $text_response);
-      } else {
-         $this->logger->warning('ECA token service not available to save response.');
-      }
-    }
-    catch (\Exception $e) {
+      $token_name = $this->configuration['response_token'];
+      $this->ecaTokenServices->addTokenData($token_name, $text_response);
+
+    } catch (\Exception $e) {
       $this->logger->error('Error executing Fabric Pattern via AI: @message', ['@message' => $e->getMessage()]);
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function access($object, ?AccountInterface $account = NULL, $return_as_object = FALSE) {
-    $result = AccessResult::allowed();
-    return $return_as_object ? $result : $result->isAllowed();
   }
 
 }

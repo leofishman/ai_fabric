@@ -1,0 +1,9 @@
+ai_fabric.admin_sync:
+  title: 'Settings / Sync'
+  route_name: ai_fabric.admin_sync
+  base_route: entity.fabric_pattern.collection
+
+entity.fabric_pattern.collection:
+  title: 'Patterns'
+  route_name: entity.fabric_pattern.collection
+  base_route: entity.fabric_pattern.collection

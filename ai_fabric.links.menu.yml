@@ -4,3 +4,10 @@ ai_fabric.admin_sync:
   parent: system.admin_config_services
   route_name: ai_fabric.admin_sync
   weight: 10
+
+entity.fabric_pattern.collection:
+  title: 'Fabric Patterns'
+  description: 'Manage and browse AI Fabric patterns.'
+  parent: system.admin_config_services
+  route_name: entity.fabric_pattern.collection
+  weight: 15
